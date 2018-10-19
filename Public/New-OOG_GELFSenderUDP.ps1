@@ -15,12 +15,14 @@ Function New-OOG_GELFSenderUDP {
 [cmdletbinding()]
     Param (
         [Parameter(Mandatory)] [String] $GelfServer,
-        [Parameter(Mandatory)] [Int]    $GelfPort
+        [Parameter(Mandatory)] [Int]    $GelfPort,
+        [Parameter(         )] [Switch] $Compress
     )
     Process {
         return [GELFSenderUDP]::new(
             $GelfServer,
-            $GelfPort
+            $GelfPort,
+            $Compress.IsPresent
         )
     }
 }

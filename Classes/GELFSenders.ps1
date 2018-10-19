@@ -133,14 +133,27 @@ Class GELFSenderUDP : GELFSender {
     Author: Brendan Bergen
     Date: Oct, 2018
 #>
+    [Boolean] $Compress
 
     <#
     .SYNOPSIS
-        Construct an instance of GELFSenderUDP with all required parameters.
+        Construct an instance of GELFSenderUDP with only connection parameters.
+        Kept for backwards compatibility. NO COMPRESSION.
     #>
     GELFSenderUDP ( [String] $gs, [int] $gp ) {
         $this.GelfServer = $gs
         $this.GelfPort   = $gp
+        $this.Compress   = $False
+    }
+
+    <#
+    .SYNOPSIS
+        Construct an instance of GELFSenderUDP potentially with compression.
+    #>
+    GELFSenderUDP ( [String] $gs, [int] $gp, [Boolean] $cprs ) {
+        $this.GelfServer = $gs
+        $this.GelfPort   = $gp
+        $this.Compress   = $cprs
     }
 
     <#
@@ -156,7 +169,7 @@ Class GELFSenderUDP : GELFSender {
         https://github.com/jeremymcgee73/PSGELF/blob/master/PSGELF/Public/Send-PSGelfUDPFromObject.ps1
     #>
     [Void] SendGELFMessage ( [GELFMessage] $msg ) {
-        $chunks = $msg.ConvertToChunkedByteList()
+        $chunks = $msg.ConvertToChunkedByteList( $this.Compress )
         $udpClient = New-Object System.Net.Sockets.UdpClient
         try {
             $udpClient.Connect( $this.GelfServer, $this.GelfPort )

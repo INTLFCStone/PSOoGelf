@@ -8,6 +8,9 @@ against are determined by environment variables.
 
 #>
 $ErrorActionPreference="Stop"
+if ( Get-Module "PSOoGelf" ) {
+    Remove-Module 'PSOoGelf'
+}
 Import-Module .\PSOoGelf.psd1 -Verbose -Force
 $VerbosePreference="Continue"
 
@@ -33,6 +36,9 @@ write-host "Number bytes: $($ary.Length)"
 write-host "----"
 $list = $msg1.ConvertToChunkedByteList()
 write-host "Number chunks: $($list.Count)"
+write-host "----"
+$listComp = $msg1.ConvertToChunkedByteList($True)
+write-host "Number chunks: $($listComp.Count)"
 write-host "----"
 
 
@@ -64,7 +70,9 @@ write-host "----"
 $list = $msg2.ConvertToChunkedByteList()
 write-host "Number chunks: $($list.Count)"
 write-host "----"
-
+$listComp = $msg2.ConvertToChunkedByteList($True)
+write-host "Number chunks: $($listComp.Count)"
+write-host "----"
 
 
 # test message with primitive-esque types
@@ -92,6 +100,9 @@ write-host "Number bytes: $($ary.Length)"
 write-host "----"
 $list = $msg3.ConvertToChunkedByteList()
 write-host "Number chunks: $($list.Count)"
+write-host "----"
+$listComp = $msg3.ConvertToChunkedByteList($True)
+write-host "Number chunks: $($listComp.Count)"
 write-host "----"
 
 
@@ -129,6 +140,15 @@ $udpSender.SendGELFMessage( $msg1 )
 write-host "    TESTING UDP MSG2"
 $udpSender.SendGELFMessage( $msg2 )
 write-host "    TESTING UDP MSG3"
+$udpSender.SendGELFMessage( $msg3 )
+
+write-host "TESTING UDP COMPRESSED"
+$udpSender = New-OOG_GELFSenderUDP -GelfServer $env:GELF_NONPROD_UDP_SERVER -GelfPort $env:GELF_NONPROD_UDP_PORT -Compress
+write-host "    TESTING UDPC MSG1"
+$udpSender.SendGELFMessage( $msg1 )
+write-host "    TESTING UDPC MSG2"
+$udpSender.SendGELFMessage( $msg2 )
+write-host "    TESTING UDPC MSG3"
 $udpSender.SendGELFMessage( $msg3 )
 
 write-host "TESTING TCP (unencrypted)"

@@ -42,7 +42,7 @@ Class GELFMessage {
     # the docs say you could set this to over 8000... but our GrayLog server
     # chokes on that size for UDP. Feel free to play around with these and let
     # me know if you can afford less chunking than we can.
-    static [Int]    $CHUNK_THRESHOLD_BYTES    = 2000
+    static [Int]    $CHUNK_THRESHOLD_BYTES    = 1000
     static [Int]    $CHUNK_SIZE_BYTES         = 1000
     static [Int]    $MAX_NUMBER_CHUNKS        = 128
 
@@ -268,13 +268,15 @@ Class GELFMessage {
 
     <#
     .SYNOPSIS
-        Convert this GELFMessage instance to GELF-legible bytes.
+        Convert this GELFMessage instance to GELF-legible bytes for TCP/UDP.
     .DESCRIPTION
         Perform all formatting required for this to be converted to valid
-        GELF-legible bytes.
+        GELF-legible bytes for TCP/UDP protocols.
     #>
     [Byte[]] ConvertToGELFByteArray () {
         $obj = $this.ConvertToPSObject()
+
+        # never fear; this "compress" only removes spaces and newlines! (mandatory)
         $json = ($obj | ConvertTo-Json -Compress)
         $bytes = [System.Text.Encoding]::ASCII.GetBytes($json)
         $bytes += [GELFMessage]::GELF_MESSAGE_TERMINATING_BYTE
@@ -287,7 +289,7 @@ Class GELFMessage {
     .DESCRIPTION
         Perform all formatting required for this to be converted to a valid set
         of GELF-legible bytes so the server can re-construct them once they reach
-        the server.
+        the server. Supports compression if you prefer consuming CPU over network.
         See http://docs.graylog.org/en/2.4/pages/gelf.html for more details on chunking.
     .NOTES
         Checkout the PSGELF module, which contains my inspiration for this method!
@@ -295,7 +297,22 @@ Class GELFMessage {
         https://github.com/jeremymcgee73/PSGELF/blob/master/PSGELF/Public/Send-PSGelfUDPFromObject.ps1
     #>
     [System.Collections.Generic.List[Byte[]]] ConvertToChunkedByteList () {
+        # backwards compatibility. No Compression.
+        return $this.ConvertToChunkedByteList( $False )
+    }
+    [System.Collections.Generic.List[Byte[]]] ConvertToChunkedByteList ( [Boolean] $compress ) {
         $gmsg = $this.ConvertToGELFByteArray()
+
+        if ( $compress ) {
+            Write-Host "Original message: $($gmsg.length) bytes"
+            $output = [System.IO.MemoryStream]::new()
+            $gzipStream = New-Object System.IO.Compression.GzipStream $output, ([IO.Compression.CompressionMode]::Compress)
+                        
+            $gzipStream.Write($gmsg, 0, $gmsg.Length)
+            $gzipStream.Close()
+            $gmsg = [Byte[]] $output.ToArray()
+            Write-Host "Compressed message: $($gmsg.length) bytes"
+        }
 
         $result = New-Object System.Collections.Generic.List[Byte[]]
 
