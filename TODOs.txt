@@ -1,5 +1,1 @@
 - create HTTP Sender (...will require removal of GELFSender, most likely. separate out into different files for each Class at that point)
-
-- parameterize compression of GELF Messages (switch - default TRUE)
-
-- refactor GELFMessage 'additional_fields' to '_additional_fields' for clarity
