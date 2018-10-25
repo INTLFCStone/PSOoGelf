@@ -1,11 +1,23 @@
 #Introduction
-Create and Send GELF formatted messages.
+Low-level abstraction of the GELF protocol. Create and Send GELF formatted messages.
 
-The Objects herein are a sister-module to PSGELF. Classes are defined for
-managing GELF messages and sending these messages to a Graylog server, which
-might be useful for more advanced/customized modules to be created (i.e factory
-methods/orchestrators). The objects completely abstract away formatting messages
-for creating and sending GELF, all in native PowerShell.
+Classes are defined for managing GELF messages and sending these messages to a
+Graylog server, which might be useful for more advanced/customized modules to be
+created (i.e factory methods/orchestrators). The objects completely abstract
+away formatting messages for creating and sending GELF, all in native PowerShell.
+
+This module and is intended to allow anyone to create and send GELF without having
+to worry about formatting of those messages (injecting null bytes, creating byte
+headers, chunking of messages, compression, etc). HOWEVER, IT IS NOT INTENDED TO
+BE USED AS AN OUT-OF-BOX LOGGING SOLUTION (though, it could be).
+
+If you are interested in seeing how this module might be helpful in constructing
+your own personalized GELF logger module, see my PSOoGelf orchestrator PSGLogThis
+for an example of how to standardize your logging and monitoring of PowerShell
+scripts: https://github.com/INTLFCStone/PSGLogThis
+
+Enjoy!
+
 
 #Example 1 - Leverage the Functions (Object factories)
 ```Powershell
